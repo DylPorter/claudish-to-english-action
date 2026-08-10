@@ -1,0 +1,41 @@
+name: "Claudish to English"
+description: "Rewrites agent-written pull request descriptions into plain English. Ported from gvzdv/claudish-to-english."
+author: "Dylan Porter"
+
+branding:
+  icon: "message-square"
+  color: "purple"
+
+inputs:
+  model:
+    description: "Model id passed to the inference endpoint."
+    required: false
+    default: "openai/gpt-4o-mini"
+  api-base:
+    description: "OpenAI-compatible base URL. Defaults to GitHub Models; point it at Anthropic, OpenAI, or a self-hosted ollama to use your own provider."
+    required: false
+    default: "https://models.github.ai/inference"
+  api-key:
+    description: "Credential for the inference endpoint. Defaults to the workflow token, which requires `models: read` permission."
+    required: false
+    default: ${{ github.token }}
+  github-token:
+    description: "Token used to read the pull request and post the comment. Separate from api-key, which may belong to a different provider."
+    required: false
+    default: ${{ github.token }}
+  min-chars:
+    description: "Skip descriptions with fewer than this many non-whitespace prose characters, ignoring fenced code blocks."
+    required: false
+    default: "200"
+  timeout:
+    description: "Seconds to wait for the model before giving up."
+    required: false
+    default: "45"
+  skip-label:
+    description: "Pull requests carrying this label are left alone."
+    required: false
+    default: "no-claudish"
+
+runs:
+  using: "node24"
+  main: "dist/index.js"

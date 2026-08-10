@@ -1,0 +1,18 @@
+# Dogfood: this repo's own pull requests get rewritten by the action in the
+# working tree (uses: ./), so a regression shows up on the PR that caused it.
+name: Plain English
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  rewrite:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      models: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./
