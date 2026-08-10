@@ -102,9 +102,13 @@ The description is read from the event payload in JavaScript and never passed th
 ```bash
 npm install
 npm run typecheck
-npm test
+npm test          # unit tests
 npm run build     # bundles to dist/, which must be committed
+npm run test:e2e  # runs the built bundle against stubbed APIs, no credentials
+npm run all       # all of the above, in order
 ```
+
+`npm run test:e2e` executes `dist/index.js` exactly as GitHub would, with the model and the GitHub API both stubbed on localhost, and asserts it creates one comment then edits that same comment. A broken bundle or entrypoint passes the unit tests and fails here.
 
 `dist/index.js` is committed because GitHub Actions runs it directly. Rebuild it in the same commit as any `src/` change — CI fails if the bundle is stale.
 
