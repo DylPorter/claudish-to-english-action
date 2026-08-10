@@ -55,7 +55,13 @@ describe("parseConfig", () => {
 
   it("rejects an empty inference key with an actionable message", () => {
     expect(() => parseConfig(reader({ "github-token": "x" }))).toThrow(ConfigError);
-    expect(() => parseConfig(reader({ "github-token": "x" }))).toThrow(/models: read/);
+    expect(() => parseConfig(reader({ "github-token": "x" }))).toThrow(/api-key` is required/);
+  });
+
+  it("says why there is no keyless default", () => {
+    // GitHub Models was retired 2026-07-30; without this note the error reads
+    // like a bug in the action rather than a dead upstream.
+    expect(() => parseConfig(reader({ "github-token": "x" }))).toThrow(/GitHub Models was retired/);
   });
 
   it("rejects an empty GitHub token", () => {

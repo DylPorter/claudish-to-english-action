@@ -17,8 +17,11 @@ export interface Config {
 }
 
 export const DEFAULTS = {
-  model: "openai/gpt-4o-mini",
-  apiBase: "https://models.github.ai/inference",
+  model: "gpt-4o-mini",
+  // Any OpenAI-compatible endpoint. GitHub Models was the original default and
+  // would have needed no key at all, but it was retired on 2026-07-30, so the
+  // Action requires a provider credential.
+  apiBase: "https://api.openai.com/v1",
   minChars: 200,
   timeoutSeconds: 45,
   skipLabel: "no-claudish",
@@ -48,8 +51,9 @@ export function parseConfig(read: InputReader): Config {
   const apiKey = read("api-key").trim();
   if (apiKey === "") {
     throw new ConfigError(
-      "`api-key` is empty. Leave it unset to use the workflow's GITHUB_TOKEN, " +
-        "and make sure the job grants `models: read`.",
+      "`api-key` is required — set it to a secret holding a key for your inference " +
+        "provider, e.g. api-key: ${{ secrets.OPENAI_API_KEY }}. There is no keyless " +
+        "default since GitHub Models was retired on 2026-07-30.",
     );
   }
 

@@ -10,15 +10,14 @@ inputs:
   model:
     description: "Model id passed to the inference endpoint."
     required: false
-    default: "openai/gpt-4o-mini"
+    default: "gpt-4o-mini"
   api-base:
-    description: "OpenAI-compatible base URL. Defaults to GitHub Models; point it at Anthropic, OpenAI, or a self-hosted ollama to use your own provider."
+    description: "OpenAI-compatible base URL. Works with OpenAI, Anthropic, Groq, OpenRouter, or a self-hosted ollama."
     required: false
-    default: "https://models.github.ai/inference"
+    default: "https://api.openai.com/v1"
   api-key:
-    description: "Credential for the inference endpoint. Defaults to the workflow token, which requires `models: read` permission."
-    required: false
-    default: ${{ github.token }}
+    description: "Credential for the inference endpoint. Required — pass a repository secret."
+    required: true
   github-token:
     description: "Token used to read the pull request and post the comment. Separate from api-key, which may belong to a different provider."
     required: false

@@ -70,8 +70,8 @@ export async function rewrite(
 
   if (response.status === 429) {
     throw new LlmError(
-      "hit the inference rate limit. On the GitHub Models free tier this resets daily — " +
-        "see the README on raising the limit or supplying your own api-key.",
+      "hit the inference provider's rate limit. Nothing was posted and the run was not " +
+        "failed — check your provider's quota, or lower how often this workflow triggers.",
       "rate-limit",
     );
   }

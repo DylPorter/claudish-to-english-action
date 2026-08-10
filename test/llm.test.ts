@@ -4,9 +4,9 @@ import { LlmError, rewrite } from "../src/llm.js";
 const messages = [{ role: "system" as const, content: "sys" }, { role: "user" as const, content: "hi" }];
 
 const options = {
-  apiBase: "https://models.github.ai/inference",
+  apiBase: "https://api.openai.com/v1",
   apiKey: "tok",
-  model: "openai/gpt-4o-mini",
+  model: "gpt-4o-mini",
   timeoutSeconds: 45,
 };
 
@@ -34,10 +34,10 @@ describe("rewrite", () => {
     const call = fetchImpl.mock.calls[0];
     const url = call?.[0];
     const init = call?.[1] as RequestInit;
-    expect(url).toBe("https://models.github.ai/inference/chat/completions");
+    expect(url).toBe("https://api.openai.com/v1/chat/completions");
     expect((init.headers as Record<string, string>)["Authorization"]).toBe("Bearer tok");
     expect(JSON.parse(init.body as string)).toMatchObject({
-      model: "openai/gpt-4o-mini",
+      model: "gpt-4o-mini",
       stream: false,
       messages,
     });
@@ -52,13 +52,13 @@ describe("rewrite", () => {
     expect(fetchImpl.mock.calls[0]?.[0]).toBe("https://example.com/v1/chat/completions");
   });
 
-  it("flags a rate limit distinctly and explains the reset", async () => {
+  it("flags a rate limit distinctly and says nothing was posted", async () => {
     const fetchImpl = vi.fn(async () => new Response("slow down", { status: 429 }));
     const error = await rewrite(messages, { ...options, fetchImpl }).catch((e) => e);
 
     expect(error).toBeInstanceOf(LlmError);
     expect(error.kind).toBe("rate-limit");
-    expect(error.message).toMatch(/resets daily/);
+    expect(error.message).toMatch(/was not failed/);
   });
 
   it("reports an HTTP failure with the status and some detail", async () => {
@@ -89,7 +89,7 @@ describe("rewrite", () => {
     const error = await rewrite(messages, { ...options, fetchImpl }).catch((e) => e);
 
     expect(error.kind).toBe("network");
-    expect(error.message).toContain("models.github.ai");
+    expect(error.message).toContain("api.openai.com");
   });
 
   it("rejects a body that is not JSON", async () => {

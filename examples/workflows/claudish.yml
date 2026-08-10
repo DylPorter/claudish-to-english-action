@@ -1,5 +1,7 @@
 # Dogfood: this repo's own pull requests get rewritten by the action in the
 # working tree (uses: ./), so a regression shows up on the PR that caused it.
+#
+# Needs a repository secret holding a key for whichever provider you point at.
 name: Plain English
 
 on:
@@ -12,7 +14,8 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-      models: read
     steps:
       - uses: actions/checkout@v4
       - uses: ./
+        with:
+          api-key: ${{ secrets.OPENAI_API_KEY }}

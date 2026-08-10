@@ -26,13 +26,13 @@ The original passes the user's original question as *context only*, with an expl
 
 ## Inference
 
-Default: **GitHub Models** via the workflow's built-in `GITHUB_TOKEN`. Endpoint `https://models.github.ai/inference`, unlocked by adding `models: read` to the workflow's `permissions` block. No API key, no secret, no third-party account.
+**Revised 2026-08-11, during implementation.** The design was approved with GitHub Models as a zero-config default — the workflow's own `GITHUB_TOKEN` plus a `models: read` permission, no API key and no secret. A live probe during the build returned `410 github_models_retirement_brownout`: **GitHub Models was fully retired on 2026-07-30**, twelve days before this was written. The docs page describing it as current had not been updated, which is how it passed verification.
 
-This is the central adoption decision. Every additional setup step costs installs, and install count is the metric that matters for this project.
+There is no keyless replacement. GitHub's own `actions/ai-inference` now requires a Copilot PAT secret plus a Copilot CLI install, and the official migration targets (Microsoft Foundry, Copilot) all need their own credentials.
 
-Escape hatch: `api-base` and `api-key` inputs make the client OpenAI-compatible, so anyone can point it at Anthropic, OpenAI, or a self-hosted ollama — the same provider-agnosticism the original got from `CLAUDISH_OLLAMA`.
+So the escape hatch becomes the main road: `api-base` and `api-key` make the client OpenAI-compatible against OpenAI, Anthropic, Groq, OpenRouter, or a self-hosted ollama — the same provider-agnosticism the original got from `CLAUDISH_OLLAMA`. `api-key` is required and has no default. `api-base` defaults to `https://api.openai.com/v1`.
 
-**Known limitation:** the GitHub Models free tier is rate limited per user, per model, per day. A busy repo will exhaust it. When that happens the Action goes quiet rather than breaking (see fail-open). This must be stated prominently in the README, or the first bug report will be "it stopped working."
+**Strategic consequence.** Zero-config was the adoption argument, and it is gone. Every install now costs the user an API key and a per-PR token spend. The Action is still worth building — the underlying problem is real and getting worse — but the "100 installs" bar on the Marketplace ladder is materially harder than it looked when this was approved, and should be re-priced rather than assumed.
 
 ## Delivery
 
@@ -88,8 +88,8 @@ pull_request event
 
 | Input | Default | Purpose |
 |---|---|---|
-| `model` | `openai/gpt-4o-mini` | model id passed through to the endpoint |
-| `api-base` | `https://models.github.ai/inference` | OpenAI-compatible base URL |
+| `model` | `gpt-4o-mini` | model id passed through to the endpoint |
+| `api-base` | `https://api.openai.com/v1` | OpenAI-compatible base URL |
 | `api-key` | `${{ github.token }}` | auth for the above |
 | `min-chars` | `200` | prose-length floor before rewriting |
 | `timeout` | `45` | seconds before giving up on the model |
@@ -99,7 +99,7 @@ Defaults make the zero-config path work with an empty `with:` block.
 
 ## Triggers
 
-`pull_request` on `opened`, `edited`, `synchronize`, `reopened`. Required permissions: `pull-requests: write`, `contents: read`, `models: read`.
+`pull_request` on `opened`, `edited`, `synchronize`, `reopened`. Required permissions: `pull-requests: write`, `contents: read`.
 
 ## Testing
 
