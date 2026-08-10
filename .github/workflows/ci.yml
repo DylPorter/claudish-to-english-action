@@ -18,6 +18,10 @@ jobs:
       - run: npm run typecheck
       - run: npm test
 
+      # Exercises the committed dist/ bundle against stubbed model and GitHub
+      # APIs. Catches bundling and entrypoint breakage that vitest cannot see.
+      - run: npm run test:e2e
+
   # dist/ is committed and executed directly by the runner, so a stale bundle
   # ships broken code while every test still passes. This catches that.
   bundle-is-current:

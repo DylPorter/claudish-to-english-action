@@ -8,8 +8,9 @@
   "scripts": {
     "build": "ncc build src/main.ts -o dist --minify",
     "test": "vitest run",
+    "test:e2e": "node test/e2e/run.mjs",
     "typecheck": "tsc --noEmit",
-    "all": "npm run typecheck && npm run test && npm run build"
+    "all": "npm run typecheck && npm run test && npm run build && npm run test:e2e"
   },
   "license": "MIT",
   "dependencies": {
