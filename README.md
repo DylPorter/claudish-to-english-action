@@ -10,6 +10,8 @@ PR descriptions are increasingly written by coding agents, and they read like it
 
 The rewrite keeps every fact, name, number, and file path. It only changes how it reads.
 
+**[See it on a real pull request →](https://github.com/DylPorter/claudish-to-english-action/pull/4)** — a deliberately overwritten description, with the rewrite posted underneath it.
+
 ## Usage
 
 ```yaml
