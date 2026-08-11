@@ -36,6 +36,7 @@ function pullRequest(overrides: Record<string, unknown> = {}) {
 /** An octokit whose calls all succeed, so only the LLM can fail. */
 function healthyOctokit(overrides: Record<string, unknown> = {}) {
   return {
+    paginate: vi.fn(async (_route: unknown, _params: unknown) => [] as Array<{ id: number; body?: string }>),
     rest: {
       pulls: { listFiles: vi.fn(async () => ({ data: [{ filename: "src/a.ts" }] })) },
       issues: {

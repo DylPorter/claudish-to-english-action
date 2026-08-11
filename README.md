@@ -40,18 +40,22 @@ The Action never touches your description. It posts one comment and edits that s
 `api-base` is any OpenAI-compatible endpoint, so this works with most providers by changing two lines.
 
 ```yaml
-        with:                                        # Anthropic
-          api-base: https://api.anthropic.com/v1
-          api-key: ${{ secrets.ANTHROPIC_API_KEY }}
-          model: claude-haiku-4-5
+        with:                                        # DeepSeek
+          api-base: https://api.deepseek.com/v1
+          api-key: ${{ secrets.DEEPSEEK_API_KEY }}
+          model: deepseek-chat
 ```
 
 ```yaml
-        with:                                        # Groq, OpenRouter, or anything else
-          api-base: https://api.groq.com/openai/v1
-          api-key: ${{ secrets.GROQ_API_KEY }}
-          model: llama-3.3-70b-versatile
+        with:                                        # Anthropic
+          api-base: https://api.anthropic.com/v1
+          api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          model: claude-haiku-4-5-20251001
 ```
+
+Anthropic's OpenAI-compatible layer works here, but [their docs](https://platform.claude.com/docs/en/api/openai-sdk) describe it as a testing convenience rather than a production path, so prefer a provider whose OpenAI-compatible endpoint is the real one.
+
+Anything else with an OpenAI-compatible `/chat/completions` — Groq, OpenRouter, a self-hosted ollama — works the same way: set `api-base` to its base URL and pick a model id from that provider's own list.
 
 This is a small, cheap call — one short prompt and a few hundred output tokens per push — so the smallest model a provider offers is usually the right choice.
 

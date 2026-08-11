@@ -81,12 +81,15 @@ async function run(): Promise<void> {
   );
 
   const api: CommentApi = {
+    // Paginated deliberately. A single page of 100 would miss the sticky
+    // comment on a busy pull request, and the action would then post a
+    // duplicate on every run instead of editing the one it already made.
     listComments: async (params) => {
-      const { data } = await octokit.rest.issues.listComments({
+      const all = await octokit.paginate(octokit.rest.issues.listComments, {
         ...params,
         per_page: 100,
       });
-      return data.map((c) => ({ id: c.id, body: c.body }));
+      return all.map((c) => ({ id: c.id, body: c.body }));
     },
     createComment: (params) => octokit.rest.issues.createComment(params),
     updateComment: (params) => octokit.rest.issues.updateComment(params),
