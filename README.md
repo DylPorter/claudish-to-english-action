@@ -55,7 +55,7 @@ The Action never touches your description. It posts one comment and edits that s
 
 This is a small, cheap call — one short prompt and a few hundred output tokens per push — so the smallest model a provider offers is usually the right choice.
 
-> **On keyless setup.** This Action was originally built against [GitHub Models](https://github.blog/changelog/2026-07-30-github-models-is-now-retired/), which would have needed no key at all: the workflow's own `GITHUB_TOKEN` plus a `models: read` permission. That service was **retired on 30 July 2026** and the endpoint now returns `410`. GitHub's own `actions/ai-inference` moved to requiring a Copilot PAT and a CLI install, so there is currently no keyless path. If one reappears, it goes back in as the default.
+> **On keyless setup.** This Action was originally designed against [GitHub Models](https://github.blog/changelog/2026-07-30-github-models-is-now-retired/), which would have needed no key at all: the workflow's own `GITHUB_TOKEN` plus a `models: read` permission. That service was **retired on 30 July 2026** and the endpoint now returns `410`. GitHub's own `actions/ai-inference` moved to requiring a Copilot PAT and a CLI install, so there is currently no keyless path. If one reappears, it goes back in as the default.
 
 `api-key` and `github-token` are deliberately separate. The first authenticates the model; the second posts the comment and defaults to the workflow token. Setting one does not change the other.
 

@@ -26,7 +26,9 @@ The original passes the user's original question as *context only*, with an expl
 
 ## Inference
 
-**Revised 2026-08-11, during implementation.** The design was approved with GitHub Models as a zero-config default — the workflow's own `GITHUB_TOKEN` plus a `models: read` permission, no API key and no secret. A live probe during the build returned `410 github_models_retirement_brownout`: **GitHub Models was fully retired on 2026-07-30**, twelve days before this was written. The docs page describing it as current had not been updated, which is how it passed verification.
+**Revised 2026-08-11, during implementation.** The design was approved with GitHub Models as a zero-config default — the workflow's own `GITHUB_TOKEN` plus a `models: read` permission, no API key and no secret. A live probe during the build returned `410 github_models_retirement_brownout`: **GitHub Models was fully retired on 2026-07-30**, twelve days before this was written.
+
+The service had been correctly documented as retired the whole time — `docs.github.com/en/github-models` leads with "GitHub Models has been retired." The approved design cited a GitHub *blog post* from before the shutdown, which naturally still described the old `models: read` pattern, and that was mistaken for current documentation. The lesson is to probe the endpoint before designing around it, not to distrust the docs.
 
 There is no keyless replacement. GitHub's own `actions/ai-inference` now requires a Copilot PAT secret plus a Copilot CLI install, and the official migration targets (Microsoft Foundry, Copilot) all need their own credentials.
 
