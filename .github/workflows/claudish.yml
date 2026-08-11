@@ -1,7 +1,8 @@
 # Dogfood: this repo's own pull requests get rewritten by the action in the
 # working tree (uses: ./), so a regression shows up on the PR that caused it.
 #
-# Needs a repository secret holding a key for whichever provider you point at.
+# Fork PRs get no secrets and a read-only token, so this quietly does nothing
+# on them by design. That is also what stops a stranger's PR spending the key.
 name: Plain English
 
 on:
@@ -18,4 +19,6 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./
         with:
-          api-key: ${{ secrets.OPENAI_API_KEY }}
+          api-base: https://api.deepseek.com/v1
+          api-key: ${{ secrets.DEEPSEEK_API_KEY }}
+          model: deepseek-chat
