@@ -10,6 +10,8 @@ PR descriptions are increasingly written by coding agents, and they read like it
 
 The rewrite keeps every fact, name, number, and file path. It only changes how it reads.
 
+**[See it on a real pull request →](https://github.com/DylPorter/claudish-to-english-action/pull/7)** — an agent-written description, with the rewrite posted underneath it.
+
 ## Usage
 
 ```yaml
@@ -38,22 +40,26 @@ The Action never touches your description. It posts one comment and edits that s
 `api-base` is any OpenAI-compatible endpoint, so this works with most providers by changing two lines.
 
 ```yaml
-        with:                                        # Anthropic
-          api-base: https://api.anthropic.com/v1
-          api-key: ${{ secrets.ANTHROPIC_API_KEY }}
-          model: claude-haiku-4-5
+        with:                                        # DeepSeek
+          api-base: https://api.deepseek.com/v1
+          api-key: ${{ secrets.DEEPSEEK_API_KEY }}
+          model: deepseek-chat
 ```
 
 ```yaml
-        with:                                        # Groq, OpenRouter, or anything else
-          api-base: https://api.groq.com/openai/v1
-          api-key: ${{ secrets.GROQ_API_KEY }}
-          model: llama-3.3-70b-versatile
+        with:                                        # Anthropic
+          api-base: https://api.anthropic.com/v1
+          api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          model: claude-haiku-4-5-20251001
 ```
+
+Anthropic's OpenAI-compatible layer works here, but [their docs](https://platform.claude.com/docs/en/api/openai-sdk) describe it as a testing convenience rather than a production path, so prefer a provider whose OpenAI-compatible endpoint is the real one.
+
+Anything else with an OpenAI-compatible `/chat/completions` — Groq, OpenRouter, a self-hosted ollama — works the same way: set `api-base` to its base URL and pick a model id from that provider's own list.
 
 This is a small, cheap call — one short prompt and a few hundred output tokens per push — so the smallest model a provider offers is usually the right choice.
 
-> **On keyless setup.** This Action was originally built against [GitHub Models](https://github.blog/changelog/2026-07-30-github-models-is-now-retired/), which would have needed no key at all: the workflow's own `GITHUB_TOKEN` plus a `models: read` permission. That service was **retired on 30 July 2026** and the endpoint now returns `410`. GitHub's own `actions/ai-inference` moved to requiring a Copilot PAT and a CLI install, so there is currently no keyless path. If one reappears, it goes back in as the default.
+> **On keyless setup.** This Action was originally designed against [GitHub Models](https://github.blog/changelog/2026-07-30-github-models-is-now-retired/), which would have needed no key at all: the workflow's own `GITHUB_TOKEN` plus a `models: read` permission. That service was **retired on 30 July 2026** and the endpoint now returns `410`. GitHub's own `actions/ai-inference` moved to requiring a Copilot PAT and a CLI install, so there is currently no keyless path. If one reappears, it goes back in as the default.
 
 `api-key` and `github-token` are deliberately separate. The first authenticates the model; the second posts the comment and defaults to the workflow token. Setting one does not change the other.
 
@@ -89,13 +95,35 @@ A consequence worth knowing: if comments stop appearing, the Action is not crash
 
 On `pull_request` events from a fork, GitHub issues a read-only token and withholds secrets, so both the model call and the comment will fail — you'll see a warning, and nothing else happens.
 
-If you need it on fork PRs, switch the trigger to `pull_request_target`. This Action only reads PR metadata and never checks out or runs PR code, which avoids the usual reason `pull_request_target` is dangerous — but understand that trigger before you reach for it.
+**That is the correct behaviour and you should probably leave it.** It is the same mechanism that stops a stranger's pull request from spending your API credits.
+
+`pull_request_target` would enable fork support, and this Action is one of the few safe uses of it — it only reads PR metadata and never checks out or executes PR code. But that safety comes from what the *workflow* does after the trigger fires, not from the trigger. Add an `actions/checkout` of the PR ref to such a workflow and you have handed attacker-controlled code a job holding your secrets, which is a well-known way public repos get compromised. If you don't already know that trade-off cold, stay on `pull_request`.
 
 ## Security notes
 
-The PR description is untrusted text that gets sent to a model, so a description can contain instructions aimed at the model rather than at a reader. The blast radius is small — the worst case is a misleading comment on the pull request whose author wrote the injection in the first place, and the Action holds no secrets beyond the tokens you gave it. But it is worth knowing before you point this at a public repo.
+**Prompt injection is possible and bounded.** The PR description is untrusted text sent to a model, so it can carry instructions aimed at the model rather than at a reader — and whatever comes back is posted by a bot, which reviewers tend to trust more than the PR author's own words. The bound: an attacker can only do this on a pull request they already wrote, so they could have put the same text in the description directly. The comment always says the original is unchanged above, so a reviewer can compare.
 
-The description is read from the event payload in JavaScript and never passed through a shell, so it cannot become workflow command injection.
+**Token scope is minimal.** The workflow needs `contents: read` and `pull-requests: write`. The `GITHUB_TOKEN` cannot push code, and on fork PRs it is read-only with no secrets attached.
+
+**No shell path.** The description is read from the event payload in JavaScript and never passed through a shell, so it cannot become workflow command injection.
+
+**Cost is bounded.** Descriptions are truncated at 20,000 characters before being sent, runs are serialised per pull request, and fork PRs never receive your key.
+
+## What it sends, and where
+
+Per push, the Action sends the pull request's **title, description, and the paths of changed files** to whichever inference endpoint you configure in `api-base`. It does not send file contents, diffs, code, or repository metadata beyond those paths.
+
+**That data goes to your provider, under your account, on your key.** The author of this Action receives nothing and operates no service — there is no backend here, only code that runs on your own runner. Your provider's terms and privacy policy govern what happens to the text after it leaves your CI.
+
+If your pull request descriptions contain anything you would not paste into that provider's API, either don't install this or point `api-base` at a self-hosted model.
+
+## Limitations worth knowing
+
+- **The rewrite is AI-generated and can be wrong.** It can drop nuance, misread intent, or state something the original didn't. Your description is never modified, so the original is always there to compare against — treat the comment as a convenience, not a source of truth.
+- **It doesn't judge quality.** It rewrites whatever it's given. A confidently wrong description becomes a clearer confidently wrong description.
+- **Silence is a valid state.** Rate limits, timeouts, and expired keys all produce a warning in the log and nothing on the PR, by design.
+- **Best on prose-heavy descriptions.** Short descriptions are skipped, and ones that are mostly code or logs have little to simplify.
+- **Report a bad rewrite** by [opening an issue](https://github.com/DylPorter/claudish-to-english-action/issues/new). Every comment it posts links there too.
 
 ## Development
 

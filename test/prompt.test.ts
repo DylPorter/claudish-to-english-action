@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { MAX_CONTEXT_FILES, buildMessages, buildSystemPrompt } from "../src/prompt.js";
+import {
+  MAX_BODY_CHARS,
+  MAX_CONTEXT_FILES,
+  buildMessages,
+  buildSystemPrompt,
+  truncateBody,
+} from "../src/prompt.js";
 
 const ctx = {
   title: "Refactor ingestion",
@@ -15,6 +21,15 @@ describe("buildSystemPrompt", () => {
     expect(prompt).toContain("Keep every fact, name, number, and file path");
     expect(prompt).toContain("Leave fenced code blocks unchanged");
     expect(prompt).toContain("no preamble, labels, or commentary");
+  });
+
+  it("forbids the closing-summary tic", () => {
+    // Observed on the first live run: the rewrite ended with "Overall, this
+    // change makes the ingestion layer more observable and resilient", which
+    // is exactly the padding this action exists to remove.
+    expect(buildSystemPrompt({ ...ctx, changedFiles: [] })).toContain(
+      "Do not add a closing summary",
+    );
   });
 
   it("adds no context section when nothing changed", () => {
@@ -49,5 +64,31 @@ describe("buildMessages", () => {
     expect(messages).toHaveLength(2);
     expect(messages[0]?.role).toBe("system");
     expect(messages[1]).toEqual({ role: "user", content: "Some description" });
+  });
+
+  it("truncates an enormous description before sending it", () => {
+    // Cost guard: on a public repo anyone can open a PR, and an unbounded
+    // description would spend unbounded tokens.
+    const huge = "x".repeat(MAX_BODY_CHARS + 5000);
+    const sent = buildMessages({ ...ctx, body: huge })[1]?.content ?? "";
+
+    expect(sent.length).toBeLessThan(huge.length);
+    expect(sent).toContain("[description truncated for length]");
+  });
+});
+
+describe("truncateBody", () => {
+  it("leaves a normal description alone", () => {
+    expect(truncateBody("short")).toBe("short");
+  });
+
+  it("leaves a description at exactly the limit alone", () => {
+    const exact = "y".repeat(MAX_BODY_CHARS);
+    expect(truncateBody(exact)).toBe(exact);
+  });
+
+  it("marks a truncated description so the model knows it is partial", () => {
+    const over = "z".repeat(MAX_BODY_CHARS + 1);
+    expect(truncateBody(over)).toContain("[description truncated for length]");
   });
 });

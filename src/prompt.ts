@@ -20,10 +20,23 @@ export interface PromptContext {
 /** How many file paths to include as grounding before it stops being cheap. */
 export const MAX_CONTEXT_FILES = 40;
 
+/**
+ * Upper bound on the description sent to the model. Without this, one
+ * enormous generated description could spend an unbounded amount of a user's
+ * tokens in a single run, on a repo where anyone can open a pull request.
+ */
+export const MAX_BODY_CHARS = 20_000;
+
+export function truncateBody(body: string): string {
+  if (body.length <= MAX_BODY_CHARS) return body;
+  return `${body.slice(0, MAX_BODY_CHARS)}\n\n[description truncated for length]`;
+}
+
 const BASE_SYSTEM_PROMPT =
   "You rewrite the pull request description into much simpler, plain English. " +
   "Keep every fact, name, number, and file path. Use short sentences and everyday words. " +
   "Leave fenced code blocks unchanged. " +
+  "Do not add a closing summary paragraph that restates what you already said. " +
   "Output ONLY the rewritten description with no preamble, labels, or commentary.";
 
 /**
@@ -57,6 +70,6 @@ export function buildSystemPrompt(ctx: PromptContext): string {
 export function buildMessages(ctx: PromptContext): Message[] {
   return [
     { role: "system", content: buildSystemPrompt(ctx) },
-    { role: "user", content: ctx.body },
+    { role: "user", content: truncateBody(ctx.body) },
   ];
 }

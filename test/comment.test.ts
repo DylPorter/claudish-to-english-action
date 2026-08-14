@@ -26,6 +26,25 @@ describe("renderComment", () => {
   it("tells the reader how to turn it off", () => {
     expect(renderComment("x")).toContain("no-claudish");
   });
+
+  // Required of generative-AI products by the GitHub Marketplace Developer
+  // Agreement. Removing either of these breaks the listing's compliance, so
+  // they are pinned rather than left to good intentions.
+  it("discloses that the content is AI-generated (Marketplace §3.4.ii)", () => {
+    const body = renderComment("x");
+    expect(body).toContain("AI-generated");
+    expect(body).toContain("language model");
+  });
+
+  it("offers a way to report a bad output (Marketplace §3.4.iii)", () => {
+    expect(renderComment("x")).toContain("/issues/new");
+  });
+
+  it("says the model can be wrong and the original is preserved", () => {
+    const body = renderComment("x");
+    expect(body).toContain("can be wrong");
+    expect(body).toContain("original is unchanged");
+  });
 });
 
 describe("findSticky", () => {

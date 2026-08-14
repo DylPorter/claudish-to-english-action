@@ -9,6 +9,12 @@ on:
   pull_request:
     types: [opened, edited, synchronize, reopened]
 
+# Two pushes in quick succession would otherwise run concurrently, both see no
+# existing comment, and both create one. Serialise per pull request.
+concurrency:
+  group: claudish-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   rewrite:
     runs-on: ubuntu-latest
