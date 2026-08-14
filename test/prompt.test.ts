@@ -23,6 +23,15 @@ describe("buildSystemPrompt", () => {
     expect(prompt).toContain("no preamble, labels, or commentary");
   });
 
+  it("forbids the closing-summary tic", () => {
+    // Observed on the first live run: the rewrite ended with "Overall, this
+    // change makes the ingestion layer more observable and resilient", which
+    // is exactly the padding this action exists to remove.
+    expect(buildSystemPrompt({ ...ctx, changedFiles: [] })).toContain(
+      "Do not add a closing summary",
+    );
+  });
+
   it("adds no context section when nothing changed", () => {
     expect(buildSystemPrompt({ ...ctx, changedFiles: [] })).not.toContain("For context");
   });

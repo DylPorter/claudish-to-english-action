@@ -36,6 +36,7 @@ const BASE_SYSTEM_PROMPT =
   "You rewrite the pull request description into much simpler, plain English. " +
   "Keep every fact, name, number, and file path. Use short sentences and everyday words. " +
   "Leave fenced code blocks unchanged. " +
+  "Do not add a closing summary paragraph that restates what you already said. " +
   "Output ONLY the rewritten description with no preamble, labels, or commentary.";
 
 /**
