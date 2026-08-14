@@ -1,0 +1,19 @@
+# The built bundle in dist/ is committed and runs on every consumer's runner,
+# so a stale dependency here ships to them rather than just sitting in a
+# lockfile. Weekly updates keep that surface current.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      actions-toolkit:
+        patterns:
+          - "@actions/*"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
