@@ -109,6 +109,22 @@ On `pull_request` events from a fork, GitHub issues a read-only token and withho
 
 **Cost is bounded.** Descriptions are truncated at 20,000 characters before being sent, runs are serialised per pull request, and fork PRs never receive your key.
 
+## What it sends, and where
+
+Per push, the Action sends the pull request's **title, description, and the paths of changed files** to whichever inference endpoint you configure in `api-base`. It does not send file contents, diffs, code, or repository metadata beyond those paths.
+
+**That data goes to your provider, under your account, on your key.** The author of this Action receives nothing and operates no service — there is no backend here, only code that runs on your own runner. Your provider's terms and privacy policy govern what happens to the text after it leaves your CI.
+
+If your pull request descriptions contain anything you would not paste into that provider's API, either don't install this or point `api-base` at a self-hosted model.
+
+## Limitations worth knowing
+
+- **The rewrite is AI-generated and can be wrong.** It can drop nuance, misread intent, or state something the original didn't. Your description is never modified, so the original is always there to compare against — treat the comment as a convenience, not a source of truth.
+- **It doesn't judge quality.** It rewrites whatever it's given. A confidently wrong description becomes a clearer confidently wrong description.
+- **Silence is a valid state.** Rate limits, timeouts, and expired keys all produce a warning in the log and nothing on the PR, by design.
+- **Best on prose-heavy descriptions.** Short descriptions are skipped, and ones that are mostly code or logs have little to simplify.
+- **Report a bad rewrite** by [opening an issue](https://github.com/DylPorter/claudish-to-english-action/issues/new). Every comment it posts links there too.
+
 ## Development
 
 ```bash

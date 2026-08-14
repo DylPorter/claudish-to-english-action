@@ -1,0 +1,11 @@
+This project is a port of gvzdv/claudish-to-english
+(https://github.com/gvzdv/claudish-to-english), a Claude Code plugin that
+rewrites assistant messages into plain English using a local ollama model.
+
+The rewrite prompt is taken from that project, adapted only where the domain
+differs (assistant messages become pull request descriptions). Original work
+copyright (c) its respective authors.
+
+The attribution previously lived in LICENSE, which prevented GitHub from
+detecting the licence as MIT. It lives here instead so the licence file stays
+byte-identical to the canonical MIT text.

@@ -36,6 +36,8 @@ export interface CommentTarget {
   prNumber: number;
 }
 
+const REPO = "https://github.com/DylPorter/claudish-to-english-action";
+
 export function renderComment(rewrite: string): string {
   return [
     MARKER,
@@ -43,8 +45,12 @@ export function renderComment(rewrite: string): string {
     "",
     rewrite,
     "",
-    "<sub>Rewritten by [claudish-to-english](https://github.com/DylPorter/claudish-to-english-action) — " +
-      "the original description is unchanged above. Add the `no-claudish` label to turn this off.</sub>",
+    // The AI-generated disclosure and the feedback link are required of
+    // products that interact with generative AI, per the GitHub Marketplace
+    // Developer Agreement §3.4(ii) and §3.4(iii). Keep both.
+    `<sub>🤖 **AI-generated.** Rewritten from the author's description by a language model via ` +
+      `[claudish-to-english](${REPO}) — it can be wrong, so the original is unchanged above. ` +
+      `[Report a bad rewrite](${REPO}/issues/new) · Add the \`no-claudish\` label to turn this off.</sub>`,
   ].join("\n");
 }
 
